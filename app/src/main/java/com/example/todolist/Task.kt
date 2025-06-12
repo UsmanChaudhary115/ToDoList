@@ -1,7 +1,11 @@
 package com.example.todolist
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "task_table")
 data class Task(
-    val id: Long,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val title: String,
-    var isCompleted: Boolean = false
+    val isCompleted: Boolean = false
 )

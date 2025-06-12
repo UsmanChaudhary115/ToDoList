@@ -68,6 +68,12 @@ class TaskAdapter(
 
     override fun getItemCount(): Int = tasks.size
 
+    fun updateTasks(newTasks: MutableList<Task>) {
+        tasks.clear()
+        tasks.addAll(newTasks)
+        notifyDataSetChanged()
+    }
+
     private fun updateTaskAppearance(holder: TaskViewHolder, isCompleted: Boolean) {
         if (isCompleted) {
             holder.textViewTitle.paintFlags = holder.textViewTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG

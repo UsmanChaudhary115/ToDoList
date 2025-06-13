@@ -1,30 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/dialog_task_form.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="16dp"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
 
-    <!-- Task Title -->
     <com.google.android.material.textfield.TextInputLayout
+        android:hint="Title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter task title">
-
+        android:layout_height="wrap_content">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextTitle"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textCapSentences" />
+            android:layout_height="wrap_content" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Task Description -->
     <com.google.android.material.textfield.TextInputLayout
+        android:hint="Description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter task description"
-        android:layout_marginTop="12dp">
-
+        android:layout_marginTop="8dp">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextDescription"
             android:layout_width="match_parent"
@@ -33,19 +28,13 @@
             android:maxLines="4" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Deadline -->
     <TextView
         android:id="@+id/textViewDeadline"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Deadline: Not set"
-        android:textColor="@android:color/darker_gray"
-        android:layout_marginTop="16dp" />
-
-    <Button
-        android:id="@+id/buttonPickDeadline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pick Deadline" />
-
+        android:text="Select Deadline"
+        android:padding="12dp"
+        android:layout_marginTop="12dp"
+        android:background="?attr/selectableItemBackground"
+        android:textColor="@color/colorAccent" />
 </LinearLayout>

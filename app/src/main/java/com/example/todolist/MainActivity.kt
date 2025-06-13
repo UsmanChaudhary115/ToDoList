@@ -1,5 +1,7 @@
 package com.example.todolist
 
+import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -11,6 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private lateinit var textViewEmpty: TextView
@@ -18,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var taskAdapter: TaskAdapter
     private lateinit var fabAdd: FloatingActionButton
     private lateinit var viewModel: TaskViewModel
+    private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +34,6 @@ class MainActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this)[TaskViewModel::class.java]
 
-        // Observe changes in the task list
         viewModel.allTasks.observe(this) { tasks ->
             taskAdapter.updateTasks(tasks.toMutableList())
             updateEmptyState(tasks.isEmpty())
@@ -59,6 +63,15 @@ class MainActivity : AppCompatActivity() {
                 TaskAdapter.TaskAction.EDIT -> {
                     showEditTaskDialog(task)
                 }
+                TaskAdapter.TaskAction.OPEN_DETAILS -> {
+                    val intent = Intent(this, TaskDetailActivity::class.java).apply {
+                        putExtra("title", task.title)
+                        putExtra("description", task.description)
+                        putExtra("setupTime", task.setupTime)
+                        putExtra("deadline", task.deadline)
+                    }
+                    startActivity(intent)
+                }
             }
         }
 
@@ -73,20 +86,46 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAddTaskDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_add_task, null)
-        val editTextTask = dialogView.findViewById<TextInputEditText>(R.id.editTextTask)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_task_form, null)
+        val editTitle = dialogView.findViewById<TextInputEditText>(R.id.editTextTitle)
+        val editDescription = dialogView.findViewById<TextInputEditText>(R.id.editTextDescription)
+        val deadlineView = dialogView.findViewById<TextView>(R.id.textViewDeadline)
+
+        val calendar = Calendar.getInstance()
+        var selectedDeadline: Long = calendar.timeInMillis
+
+        deadlineView.setOnClickListener {
+            val datePicker = DatePickerDialog(
+                this,
+                { _, year, month, day ->
+                    calendar.set(year, month, day)
+                    selectedDeadline = calendar.timeInMillis
+                    deadlineView.text = "Deadline: ${dateFormat.format(calendar.time)}"
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            )
+            datePicker.show()
+        }
 
         AlertDialog.Builder(this)
             .setTitle("Add New Task")
             .setView(dialogView)
             .setPositiveButton("Add") { _, _ ->
-                val taskTitle = editTextTask.text.toString().trim()
-                if (taskTitle.isNotEmpty()) {
-                    val newTask = Task(id = 0, title = taskTitle) // Let Room auto-generate ID
-                    viewModel.insert(newTask)
-                    Toast.makeText(this, "Task added successfully", Toast.LENGTH_SHORT).show()
+                val title = editTitle.text.toString().trim()
+                val description = editDescription.text.toString().trim()
+                if (title.isNotEmpty()) {
+                    val task = Task(
+                        title = title,
+                        description = description,
+                        setupTime = System.currentTimeMillis(),
+                        deadline = selectedDeadline
+                    )
+                    viewModel.insert(task)
+                    Toast.makeText(this, "Task added", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "Please enter a task", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Enter task title", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -94,21 +133,51 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showEditTaskDialog(task: Task) {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_add_task, null)
-        val editTextTask = dialogView.findViewById<TextInputEditText>(R.id.editTextTask)
-        editTextTask.setText(task.title)
-        editTextTask.setSelection(task.title.length)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_task_form, null)
+        val editTitle = dialogView.findViewById<TextInputEditText>(R.id.editTextTitle)
+        val editDescription = dialogView.findViewById<TextInputEditText>(R.id.editTextDescription)
+        val deadlineView = dialogView.findViewById<TextView>(R.id.textViewDeadline)
+
+        editTitle.setText(task.title)
+        editDescription.setText(task.description)
+
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = task.deadline
+        }
+        var selectedDeadline = task.deadline
+        deadlineView.text = "Deadline: ${dateFormat.format(Date(task.deadline))}"
+
+        deadlineView.setOnClickListener {
+            val datePicker = DatePickerDialog(
+                this,
+                { _, year, month, day ->
+                    calendar.set(year, month, day)
+                    selectedDeadline = calendar.timeInMillis
+                    deadlineView.text = "Deadline: ${dateFormat.format(calendar.time)}"
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            )
+            datePicker.show()
+        }
 
         AlertDialog.Builder(this)
             .setTitle("Edit Task")
             .setView(dialogView)
             .setPositiveButton("Update") { _, _ ->
-                val newTitle = editTextTask.text.toString().trim()
+                val newTitle = editTitle.text.toString().trim()
+                val newDescription = editDescription.text.toString().trim()
                 if (newTitle.isNotEmpty()) {
-                    viewModel.update(task.copy(title = newTitle))
-                    Toast.makeText(this, "Task updated successfully", Toast.LENGTH_SHORT).show()
+                    val updated = task.copy(
+                        title = newTitle,
+                        description = newDescription,
+                        deadline = selectedDeadline
+                    )
+                    viewModel.update(updated)
+                    Toast.makeText(this, "Task updated", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "Please enter a task", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Title cannot be empty", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancel", null)

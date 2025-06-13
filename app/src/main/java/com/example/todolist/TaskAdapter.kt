@@ -18,7 +18,8 @@ class TaskAdapter(
     enum class TaskAction {
         TOGGLE_COMPLETE,
         DELETE,
-        EDIT
+        EDIT,
+        OPEN_DETAILS
     }
 
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -38,28 +39,24 @@ class TaskAdapter(
 
         holder.textViewTitle.text = task.title
         holder.checkBoxComplete.isChecked = task.isCompleted
-
-        // Update UI based on completion status
         updateTaskAppearance(holder, task.isCompleted)
 
-        // Set click listeners
+        // Completion toggle
         holder.checkBoxComplete.setOnClickListener {
             onTaskAction(task, TaskAction.TOGGLE_COMPLETE)
-            updateTaskAppearance(holder, task.isCompleted)
         }
 
+        // Delete button
         holder.buttonDelete.setOnClickListener {
             onTaskAction(task, TaskAction.DELETE)
         }
 
-        // Allow clicking on the entire item to toggle completion
+        // Tap → open details
         holder.itemView.setOnClickListener {
-            holder.checkBoxComplete.isChecked = !holder.checkBoxComplete.isChecked
-            onTaskAction(task, TaskAction.TOGGLE_COMPLETE)
-            updateTaskAppearance(holder, task.isCompleted)
+            onTaskAction(task, TaskAction.OPEN_DETAILS)
         }
 
-        // Long press to edit task
+        // Long press → edit
         holder.itemView.setOnLongClickListener {
             onTaskAction(task, TaskAction.EDIT)
             true
@@ -76,12 +73,14 @@ class TaskAdapter(
 
     private fun updateTaskAppearance(holder: TaskViewHolder, isCompleted: Boolean) {
         if (isCompleted) {
-            holder.textViewTitle.paintFlags = holder.textViewTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            holder.textViewTitle.paintFlags =
+                holder.textViewTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
             holder.textViewTitle.setTextColor(
                 ContextCompat.getColor(holder.itemView.context, android.R.color.darker_gray)
             )
         } else {
-            holder.textViewTitle.paintFlags = holder.textViewTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            holder.textViewTitle.paintFlags =
+                holder.textViewTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
             holder.textViewTitle.setTextColor(
                 ContextCompat.getColor(holder.itemView.context, android.R.color.black)
             )

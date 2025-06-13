@@ -12,21 +12,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ToDoList"
         tools:targetApi="31">
+
+        <!-- Detail Activity -->
         <activity
-            android:name=".Task"
-            android:exported="false" />
-        <activity
-            android:name=".TaskAdapter"
-            android:exported="false" />
+            android:name=".TaskDetailActivity" />
+
+        <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>
